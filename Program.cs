@@ -62,7 +62,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddApiVersioning();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-var serverVersion = new MySqlServerVersion(new Version(11, 2, 2));
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 30));
 // Add DB Contexts
 // Move the connection string to user secrets for release
 builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseMySql(builder.Configuration["Api:MysqlConnectionString"], serverVersion));
