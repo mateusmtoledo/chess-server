@@ -10,10 +10,12 @@ public class TokenService
 {
     private const int ExpirationMinutes = 30;
     private readonly ILogger<TokenService> _logger;
+    private readonly IConfiguration _configuration;
 
-    public TokenService(ILogger<TokenService> logger)
+    public TokenService(ILogger<TokenService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
     public string CreateToken(ApplicationUser user)
@@ -34,8 +36,8 @@ public class TokenService
     private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
         DateTime expiration) =>
         new(
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
-            new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidAudience"],
+            _configuration["JwtTokenSettings:ValidIssuer"],
+            _configuration["JwtTokenSettings:ValidAudience"],
             claims,
             expires: expiration,
             signingCredentials: credentials
@@ -43,7 +45,7 @@ public class TokenService
 
     private List<Claim> CreateClaims(ApplicationUser user)
     {
-        var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
+        var jwtSub = _configuration["JwtTokenSettings:JwtRegisteredClaimNamesSub"]!;
 
         try
         {
@@ -69,7 +71,7 @@ public class TokenService
 
     private SigningCredentials CreateSigningCredentials()
     {
-        var symmetricSecurityKey = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
+        var symmetricSecurityKey = _configuration["JwtTokenSettings:SymmetricSecurityKey"]!;
 
         return new SigningCredentials(
             new SymmetricSecurityKey(

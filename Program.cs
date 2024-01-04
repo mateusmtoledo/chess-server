@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins("http://localhost:5173")
+                .WithOrigins(builder.Configuration["ChessApi:OriginUrl"]!)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -65,7 +65,7 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 var serverVersion = new MySqlServerVersion(new Version(11, 2, 2));
 // Add DB Contexts
 // Move the connection string to user secrets for release
-builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseMySql("Host=localhost;Database=chess;Username=mysql;Password=mysql", serverVersion));
+builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseMySql(builder.Configuration["Api:MysqlConnectionString"], serverVersion));
 
 // Register our TokenService dependency
 builder.Services.AddScoped<TokenService, TokenService>();
@@ -92,11 +92,7 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 
-// These will eventually be moved to a secrets file, but for alpha development appsettings is fine
-var validIssuer = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidIssuer");
-var validAudience = builder.Configuration.GetValue<string>("JwtTokenSettings:ValidAudience");
-var symmetricSecurityKey = builder.Configuration.GetValue<string>("JwtTokenSettings:SymmetricSecurityKey");
-
+var symmetricSecurityKey = builder.Configuration["JwtTokenSettings:SymmetricSecurityKey"]!;
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -113,8 +109,8 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = validIssuer,
-            ValidAudience = validAudience,
+            ValidIssuer = builder.Configuration["JwtTokenSettings:ValidIssuer"],
+            ValidAudience = builder.Configuration["JwtTokenSettings:ValidAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(symmetricSecurityKey)
             ),
