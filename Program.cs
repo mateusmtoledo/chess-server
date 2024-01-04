@@ -7,10 +7,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ChessServer.Services;
+using Azure.Identity;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+var vaultUri = Environment.GetEnvironmentVariable("AZURE_KEYVAULT_URI");
+
+if (vaultUri is not null)
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
+}
 
 // Add services
 
