@@ -8,7 +8,6 @@ namespace ChessServer.Services;
 
 public class TokenService
 {
-    private const int ExpirationMinutes = 30;
     private readonly ILogger<TokenService> _logger;
     private readonly IConfiguration _configuration;
 
@@ -20,7 +19,7 @@ public class TokenService
 
     public string CreateToken(ApplicationUser user)
     {
-        var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
+        var expiration = DateTime.UtcNow.AddDays(7);
         var token = CreateJwtToken(
             CreateClaims(user),
             CreateSigningCredentials(),
