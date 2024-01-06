@@ -1,4 +1,5 @@
 using System.Text;
+using ChessServer.Hubs;
 using System.Text.Json.Serialization;
 using ChessServer.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ChessServer.Services;
 using Azure.Identity;
+using Chess;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -34,6 +36,10 @@ builder.Services.AddCors(options =>
                 .AllowCredentials();
         });
 });
+
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<ChessBoard>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -142,5 +148,8 @@ app.UseStatusCodePages();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<GameHub>("/gamehub");
 app.MapControllers();
+
 app.Run();
