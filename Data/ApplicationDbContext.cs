@@ -12,6 +12,8 @@ public class ApplicationDbContext : IdentityUserContext<ApplicationUser>
 
     }
 
+    public DbSet<Game> Games { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
