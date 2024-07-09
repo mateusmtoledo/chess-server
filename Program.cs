@@ -9,8 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ChessServer.Services;
 using Azure.Identity;
-using Chess;
 
+var GameHubPath = "/gamehub";
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,7 +39,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<ChessBoard>();
+builder.Services.AddKeyedSingleton<HashSet<string>>("playersInQueue");
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IQueueService, QueueService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -97,7 +99,7 @@ builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
-        options.User.RequireUniqueEmail = true;
+        options.User.RequireUniqueEmail = false;
         options.Password.RequireDigit = false;
         options.Password.RequiredLength = 6;
         options.Password.RequireNonAlphanumeric = false;
@@ -129,6 +131,23 @@ builder.Services.AddAuthentication(options =>
                 Encoding.UTF8.GetBytes(symmetricSecurityKey)
             ),
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments(GameHubPath)))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // Build the app
@@ -149,7 +168,7 @@ app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHub<GameHub>("/gamehub");
+app.MapHub<GameHub>(GameHubPath);
 app.MapControllers();
 
 app.Run();

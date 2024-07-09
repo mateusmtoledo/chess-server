@@ -33,13 +33,13 @@ public class AuthController : ControllerBase
         }
 
         var result = await _userManager.CreateAsync(
-            new ApplicationUser { Name = request.Name, UserName = request.Email, Email = request.Email },
+            new ApplicationUser { Name = request.Name, UserName = request.Name },
             request.Password
         );
         if (result.Succeeded)
         {
             request.Password = "";
-            return CreatedAtAction(nameof(Register), new { email = request.Email, name = request.Name }, request);
+            return CreatedAtAction(nameof(Register), new { name = request.Name }, request);
         }
 
         foreach (var error in result.Errors)
@@ -60,7 +60,7 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var managedUser = await _userManager.FindByEmailAsync(request.Email);
+        var managedUser = await _userManager.FindByNameAsync(request.Name);
         if (managedUser == null)
         {
             return BadRequest("Bad credentials");
@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
             return BadRequest("Bad credentials");
         }
 
-        var userInDb = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+        var userInDb = _context.Users.FirstOrDefault(u => u.Name == request.Name);
         if (userInDb is null)
         {
             return Unauthorized();
@@ -84,7 +84,6 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponse
         {
             Name = userInDb.Name,
-            Email = userInDb.Email,
             Token = accessToken,
         });
     }
@@ -94,7 +93,7 @@ public class AuthController : ControllerBase
     [Route("info")]
     public async Task<ActionResult<UserInfoResponse>> GetUserInfo()
     {
-        var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+        var currentUser = await _userManager.FindByNameAsync(User.Identity.Name);
 
         if (currentUser is null)
         {

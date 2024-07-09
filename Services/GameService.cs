@@ -1,10 +1,17 @@
 using ChessServer.Models;
 using ChessServer.Data;
 using Chess;
+using System.Text.Json;
 
 namespace ChessServer.Services;
 
-class GameService
+public interface IGameService
+{
+    Task<Game> CreateGameAsync(string whitePlayerId, string blackPlayerId);
+    Task<Game?> GetGameByIdAsync(int gameId);
+}
+
+public class GameService : IGameService
 {
     private readonly ApplicationDbContext _context;
 
@@ -18,6 +25,7 @@ class GameService
         Game game = new Game(whitePlayerId, blackPlayerId);
         game.Pgn = new ChessBoard().ToPgn();
         await _context.AddAsync<Game>(game);
+        await _context.SaveChangesAsync();
         return game;
     }
 

@@ -46,6 +46,8 @@ public class TokenService
     {
         var jwtSub = _configuration["JwtTokenSettings:JwtRegisteredClaimNamesSub"]!;
 
+        Console.WriteLine(user.Id);
+
         try
         {
             var claims = new List<Claim>
@@ -53,10 +55,8 @@ public class TokenService
                 new Claim(JwtRegisteredClaimNames.Sub, jwtSub),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.Email),
+                new Claim("UserId", user.Id),
                 new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email, user.Email),
             };
 
             return claims;
