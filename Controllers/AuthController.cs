@@ -100,6 +100,6 @@ public class AuthController : ControllerBase
             return BadRequest();
         }
 
-        return Ok(new UserInfoResponse() { Name = currentUser.Name, Email = currentUser.Email });
+        return Ok(new UserInfoResponse() { Id = currentUser.Id, Name = currentUser.Name, Email = currentUser.Email });
     }
 }
