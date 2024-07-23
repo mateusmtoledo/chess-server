@@ -2,9 +2,10 @@ namespace ChessServer.Services;
 
 public interface IQueueService
 {
-    Task<bool> AddToQueue(string userId);
-    bool RemoveFromQueue(string userId);
+    bool AddToQueue(string connectionId);
+    bool RemoveFromQueue(string connectionId);
     int Count();
+    List<string> Take(int num);
 }
 
 public class QueueService : IQueueService
@@ -18,23 +19,21 @@ public class QueueService : IQueueService
         _playersInQueue = playersInQueue;
     }
 
-    public async Task<bool> AddToQueue(string userId)
+    public bool AddToQueue(string connectionId)
     {
-        bool result = _playersInQueue.Add(userId);
-        if (_playersInQueue.Count >= 2)
-        {
-            List<string> players = _playersInQueue.Take(2).ToList();
-            _playersInQueue.Remove(players[0]);
-            _playersInQueue.Remove(players[1]);
-            await _gameService.CreateGameAsync(players[0], players[1]);
-        }
+        bool result = _playersInQueue.Add(connectionId);
         return result;
     }
 
-    public bool RemoveFromQueue(string userId)
+    public bool RemoveFromQueue(string connectionId)
     {
-        bool result = _playersInQueue.Remove(userId);
+        bool result = _playersInQueue.Remove(connectionId);
         return result;
+    }
+
+    public List<string> Take(int num)
+    {
+        return _playersInQueue.Take(num).ToList();
     }
 
     public int Count()

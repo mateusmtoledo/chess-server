@@ -39,6 +39,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
+builder.Services.AddSingleton<IConnectionsService, ConnectionsService>();
 builder.Services.AddKeyedSingleton<HashSet<string>>("playersInQueue");
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IQueueService, QueueService>();
